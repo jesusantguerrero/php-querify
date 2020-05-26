@@ -15,7 +15,7 @@ trait Querify
         $queryParams = $request->query();
         $limit = isset($queryParams['limit']) ? $queryParams['limit'] : null;
         $search = isset($queryParams['search']) ? $queryParams['search'] : null;
-        $sort = isset($queryParams['sort']) ? $queryParams['sort'] : null;
+        $sorts = isset($queryParams['sort']) ? $queryParams['sort'] : null;
         $relationships = isset($queryParams['relationships']) ? $queryParams['relationships'] : null;
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
 
@@ -23,7 +23,7 @@ trait Querify
         $this->whereRaw = $this->getSearch($search);
         $this->getRelationships($relationships);
         $this->getFilters($filters);
-        $this->getSorts($sort);
+        $this->getSorts($sorts);
         
         if ($extendFunction) {
           $extendFunction($this->modelQuery, $queryParams);
@@ -37,7 +37,8 @@ trait Querify
         return $this->getPaginate($limit);
     }
 
-    private function getSearch($search) {
+    private function getSearch($search) 
+    {
         $whereRaw = '';
          // handle search
          foreach ($this->searchable as $field) {
@@ -52,7 +53,8 @@ trait Querify
         return $whereRaw;
     }
 
-    private function getRelationships($relationships) {
+    private function getRelationships($relationships) 
+    {
         if ($this->includes && count($includes = $this->includes)) {
             $fullRelations = [];
             foreach ($includes as $relation => $attrs) {
@@ -67,7 +69,8 @@ trait Querify
         }
     }
 
-    private function getFilters($filters){
+    private function getFilters($filters)
+    {
         $this->filters = array_merge($this->filters, $filters);
 
         if (count($this->filters)) {
@@ -85,7 +88,8 @@ trait Querify
         }
     }
 
-    private function addFilter($field, $value) {
+    private function addFilter($field, $value) 
+    {
         $optionalValues= null;
         $disableSecondWhere=null;
 
@@ -144,8 +148,21 @@ trait Querify
         }
     }
 
-    private function getPaginate($limit) {
+    private function getPaginate($limit) 
+    {
         return $this->modelQuery->paginate($limit);
+    }
+
+    private function getSorts($sorts) 
+    {
+        if ($sorts) {
+            $sorts = $this->splitAndTrim($sorts);
+            foreach ($sorts as $sort) {
+                $direction = strpos($sort, "-") ? "DESC" : "ASC";
+                $sort = $direction == "ASC" ? $sort : substr($sort, 1);
+                $this->modelQuery->orderBy($sort, $direction);
+            }
+          }
     }
 
     private function splitAndTrim($text, $separator = ',') {
