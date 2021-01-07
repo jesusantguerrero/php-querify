@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Freesgen": "src/"
+            "Freesgen\\": "src/"
         }
     }
 }
